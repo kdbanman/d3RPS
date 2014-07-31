@@ -27,6 +27,8 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , iterating = false
     ;
 
+// TODO add competition function mode from squareRPS.js
+
 function coord(x, y) {
     return coord[x +','+ y] ||
            (coord[x +','+ y] = ccx * ((ccy + y) % ccy) + ((ccx + x) % ccx));

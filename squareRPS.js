@@ -11,7 +11,26 @@ var w   = 960 // bl.ocks.org viewport width
   , yScale  = d3.scale.linear().domain([0, ccy]).rangeRound([0, ccy * ch])
 
   , states = []
+  , mode = 'identity'
   ;
+
+var competition = {
+  zero: function (defender) {
+    return 0;
+  },
+  identity: function (defender) {
+    return defender;
+  },
+  half: function (defender) {
+    return defender / 2;
+  },
+  sqrt: function (defender) {
+    return Math.sqrt(defender);
+  },
+  log: function (defender) {
+    return Math.log(defender) / Math.log(2);
+  }
+}
 
 d3.range(ccx * ccy).forEach(function(c) {
   // 3 possible cell states - 0, 1, or 2
@@ -67,11 +86,11 @@ function createNewGeneration() {
         else numScissors++;
       });
 
-      if (states[coord(x,y)] === 0 && numPaper > numRock)
+      if (states[coord(x,y)] === 0 && numPaper > competition[mode](numRock))
         nextState[coord(x,y)] = 1;
-      else if (states[coord(x,y)] === 1 && numScissors > numPaper)
+      else if (states[coord(x,y)] === 1 && numScissors > competition[mode](numPaper))
         nextState[coord(x,y)] = 2;
-      else if (states[coord(x,y)] === 2 && numRock > numScissors)
+      else if (states[coord(x,y)] === 2 && numRock > competition[mode](numScissors))
         nextState[coord(x,y)] = 0;
       else 
         nextState[coord(x,y)] = states[coord(x,y)];
@@ -90,8 +109,7 @@ function animate() {
     .data(states = createNewGeneration())
   // class all cells as .cell
   // map state 0 to rock, 1 to paper, 2 to scissors
-  .classed({'cell': true,
-            'rock': function(d) { return d === 0; },
+  .classed({'rock': function(d) { return d === 0; },
             'paper': function(d) { return d === 1; },
             'scissors': function(d) { return d === 2; }});
 
