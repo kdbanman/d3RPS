@@ -4,15 +4,27 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF8">
     <link href="reset.css" rel="stylesheet" type="text/css"></link>
     <style>
+      body { background-color: #332222; }
+      .output {
+        margin-left: calc(50% - 400px);
+        margin-top: 50px;
+      }
+      .link {
+        stroke: #777;
+        stroke-width: 1px;
+      }
       .cell { fill: #FFF; stroke: none; }
-      .rock { fill: #ACE; }
-      .paper { fill: #AEC; }
-      .scissors { fill: #EAC; }
+      .rock { fill: #7239A0; }
+      .paper { fill: #84D441; }
+      .scissors { fill: #D97F24; }
       .cell:hover { stroke: #AAA; }
     </style>
   </head>
   <body>
+    <div class="output"></div>
     <script src="http://d3js.org/d3.v2.min.js"></script>
+    <script src="http://underscorejs.org/underscore-min.js" ></script>
+    <script src="Cell.js"></script>
     <script src="squarishRPS.js"></script>
   </body>
 </html>
