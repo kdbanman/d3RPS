@@ -25,9 +25,26 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , links = []
 
     , iterating = false
+    , mode = 'log'
     ;
 
-// TODO add competition function mode from squareRPS.js
+var competition = {
+	zero: function (defender) {
+		return 0;
+	},
+	identity: function (defender) {
+		return defender;
+	},
+	half: function (defender) {
+		return defender / 2;
+	},
+	sqrt: function (defender) {
+		return Math.sqrt(defender);
+	},
+	log: function (defender) {
+		return Math.log(defender) / Math.log(2);
+	}
+}
 
 function coord(x, y) {
     return coord[x +','+ y] ||
@@ -106,11 +123,11 @@ function mutatedNextStateGraph() {
                 else numScissors++;
             }
 
-            if (stateGraph[c].state === 0 && numPaper > Math.sqrt(numRock))
+            if (stateGraph[c].state === 0 && numPaper > competition[mode](numRock))
                 nextStateGraph[c].state = 1;
-            else if (stateGraph[c].state === 1 && numScissors > Math.sqrt(numPaper))
+            else if (stateGraph[c].state === 1 && numScissors > competition[mode](numPaper))
                 nextStateGraph[c].state = 2;
-            else if (stateGraph[c].state === 2 && numRock > Math.sqrt(numScissors))
+            else if (stateGraph[c].state === 2 && numRock > competition[mode](numScissors))
                 nextStateGraph[c].state = 0;
             else 
                 nextStateGraph[c].state = stateGraph[c].state;
