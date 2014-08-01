@@ -4,7 +4,7 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , w = viewW / 2 
     , h = viewW / 2
 
-    , cellSize = 10 // cellWidth
+    , cellSize = 10
     , padding = 10
 
     , ccx = w/(cellSize + padding) // cell count x
@@ -27,114 +27,6 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , iterating = false
     , mode = 'log'
     ;
-
-var competition = {
-	zero: function (defender) {
-		return 0;
-	},
-	identity: function (defender) {
-		return defender;
-	},
-	half: function (defender) {
-		return defender / 2;
-	},
-	sqrt: function (defender) {
-		return Math.sqrt(defender);
-	},
-	log: function (defender) {
-		return Math.log(defender) / Math.log(2);
-	}
-}
-
-function coord(x, y) {
-    return coord[x +','+ y] ||
-           (coord[x +','+ y] = ccx * ((ccy + y) % ccy) + ((ccx + x) % ccx));
-}
-
-// returns an array of coordinates (array indices) for stateGraph
-function mooreNbrs(c, dist, density) {
-    dist = dist || 1;
-
-
-    // attempt to get memoized coordinate array
-    if (mooreNbrs[c + ',' + dist] === undefined) {
-
-        if (c % 1 !== 0) console.log('c must be integer');
-        if (dist % 1 !== 0) console.log('dist must be integer');
-
-        // generate memoized entry
-        mooreNbrs[c + ',' + dist] = [];
-
-        var pushNbr = function (pushX, pushY) {
-            if (pushX >= 0 && pushX < ccx &&
-                pushY >= 0 && pushY < ccy &&
-                Math.random() < density)
-                mooreNbrs[c + ',' + dist].push(coord(pushX,pushY));
-        };
-
-        var x = c % ccx;
-        var y = Math.floor(c / ccx);
-
-        // start from top left and push to nbr array clockwise
-        var nbrX = x - dist;
-        var nbrY = y - dist;
-        while (nbrX <= x + dist) {
-            pushNbr(nbrX, nbrY);
-            nbrX++;
-        } // top row pushed
-        nbrX--;
-        nbrY++;
-        while (nbrY <= y + dist) {
-            pushNbr(nbrX, nbrY);
-            nbrY++;
-        } // right col pushed
-        nbrY--;
-        nbrX--;
-        while (nbrX >= x - dist) {
-            pushNbr(nbrX, nbrY);
-            nbrX--;
-        } // bottom row pushed
-        nbrX++;
-        nbrY--;
-        while (nbrY > y - dist) {
-            pushNbr(nbrX, nbrY);
-            nbrY--;
-        }
-    }
-
-    return mooreNbrs[c + ',' + dist];
-}
-
-function mutatedNextStateGraph() {
-    var c,
-        coord,
-        nbr,
-        numRock,
-        numPaper,
-        numScissors;
-
-    for (c = 0; c < stateGraph.length; c++) {
-            numRock = 0;
-            numPaper = 0;
-            numScissors = 0;
-            for (coord in stateGraph[c].nbrs) {
-                if (stateGraph[coord].state === 0) numRock++;
-                else if (stateGraph[coord].state === 1) numPaper++;
-                else numScissors++;
-            }
-
-            if (stateGraph[c].state === 0 && numPaper > competition[mode](numRock))
-                nextStateGraph[c].state = 1;
-            else if (stateGraph[c].state === 1 && numScissors > competition[mode](numPaper))
-                nextStateGraph[c].state = 2;
-            else if (stateGraph[c].state === 2 && numRock > competition[mode](numScissors))
-                nextStateGraph[c].state = 0;
-            else 
-                nextStateGraph[c].state = stateGraph[c].state;
-
-        }
-    return nextStateGraph;
-}
 
 // assign initial cell states
 // 3 possible cell states - 0, 1, or 2
@@ -168,26 +60,45 @@ var force = d3.layout.force()
     .size([viewW, viewH])
     .nodes(stateGraph)
     .links(links)
-    .linkDistance(padding / 10)
+    .linkDistance(padding)
     .charge(-50)
+    .chargeDistance(padding * 30)
+    .gravity(0.001)
     .on('tick', tick)
-    .start();;
+    .start();
+
+var zoom = d3.behavior.zoom().on("zoom", zoomed);
+
+var drag = force.drag()
+    .origin(function(d) { return d; })
+    .on("dragstart", dragstarted)
+    .on("drag", dragged);
 
 var vis = d3.select('.output').append('svg')
     .attr('width', viewW)
-    .attr('height', viewH);
+    .attr('height', viewH)
+    .append('g')
+    .call(zoom);
 
-var link = vis.selectAll("line")
+var rect = vis.append("rect")
+    .attr("width", viewW)
+    .attr("height", viewH)
+    .style("fill", "none")
+    .style("pointer-events", "all");
+
+var container = vis.append('g');
+
+var link = container.selectAll("line")
     .data(force.links())
     .enter().append("line");
 
 link.classed({'link': true,});
 
-var node = vis.selectAll('circle')
+var node = container.selectAll('circle')
         .data(force.nodes(), function (d) { return d.idx; })
     .enter().append('circle')
     .attr('r', cellSize)
-    .call(force.drag)
+    .call(drag)
     .on("click", function(d) {
         if (d3.event.shiftKey) {
             d.state = (d.state + 1) % 3;
@@ -201,14 +112,26 @@ node.classed({'cell': true,
               'paper': function(d) { return d.state === 1; },
               'scissors': function(d) { return d.state === 2; }});
 
+function zoomed() {
+  container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+function dragstarted(d) {
+    d3.event.sourceEvent.stopPropagation();
+}
+
+function dragged(d) {
+    d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+}
+
 function tick() {
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+
     link.attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
-
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
 }
 
 function iterate() {

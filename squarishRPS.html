@@ -5,12 +5,14 @@
     <link href="reset.css" rel="stylesheet" type="text/css"></link>
     <style>
       body { background-color: #332222; }
-      .nav { padding: 1em }
-      .nav ul { list-style: none; }
-      .nav ul li { display: inline-block; }
+      .mode { padding: 1em }
+      .mode ul { list-style: none; }
+      .mode ul li { display: inline-block; }
       .output {
         margin-left: calc(50% - 400px);
-        margin-top: 50px;
+      }
+      .output svg {
+        background-color: rgba(255,255,255,0.1);
       }
       .link {
         stroke: #777;
@@ -24,7 +26,7 @@
     </style>
   </head>
   <body>
-    <div class='nav'>
+    <div class='mode'>
       <button type="button" onclick="mode = this.innerHTML;">zero</button>
       <button type="button" onclick="mode = this.innerHTML;">identity</button>
       <button type="button" onclick="mode = this.innerHTML;">half</button>
@@ -32,9 +34,10 @@
       <button type="button" onclick="mode = this.innerHTML;">log</button>
     </div>
     <div class="output"></div>
-    <script src="http://d3js.org/d3.v2.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://underscorejs.org/underscore-min.js" ></script>
     <script src="Cell.js"></script>
+    <script src="squarishRPS-util.js"></script>
     <script src="squarishRPS.js"></script>
   </body>
 </html>
