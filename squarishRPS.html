@@ -5,6 +5,9 @@
     <link href="reset.css" rel="stylesheet" type="text/css"></link>
     <style>
       body { background-color: #332222; }
+      .nav { padding: 1em }
+      .nav ul { list-style: none; }
+      .nav ul li { display: inline-block; }
       .output {
         margin-left: calc(50% - 400px);
         margin-top: 50px;
@@ -21,6 +24,13 @@
     </style>
   </head>
   <body>
+    <div class='nav'>
+      <button type="button" onclick="mode = this.innerHTML;">zero</button>
+      <button type="button" onclick="mode = this.innerHTML;">identity</button>
+      <button type="button" onclick="mode = this.innerHTML;">half</button>
+      <button type="button" onclick="mode = this.innerHTML;">sqrt</button>
+      <button type="button" onclick="mode = this.innerHTML;">log</button>
+    </div>
     <div class="output"></div>
     <script src="http://d3js.org/d3.v2.min.js"></script>
     <script src="http://underscorejs.org/underscore-min.js" ></script>
