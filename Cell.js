@@ -57,8 +57,10 @@ Cell.prototype.delNbr = function (coord)
         delete this.nbrs[coord];
         
         for (i = 0; i < this.d3Links.length; i++) {
-            if (this.d3Links[i].source === this.idx &&
-                this.d3Links[i].target === coord) delete this.d3Links[i];
+            if (this.d3Links[i]) {
+                if (this.d3Links[i].source === this.idx &&
+                    this.d3Links[i].target === coord) delete this.d3Links[i];
+            }
         }
     }
     // remove self from neighbor list of ex-neigbor
@@ -67,8 +69,10 @@ Cell.prototype.delNbr = function (coord)
         delete nbr.nbrs[this.idx];
 
         for (i = 0; i < nbr.d3Links.length; i++) {
-            if (nbr.d3Links[i].source === coord &&
-                nbr.d3Links[i].target === this.idx) delete nbr.d3Links[i];
+            if (nbr.d3Links[i]) {
+                if (nbr.d3Links[i].source === coord &&
+                    nbr.d3Links[i].target === this.idx) delete nbr.d3Links[i];
+            }
         }
     }
 }
