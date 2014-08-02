@@ -5,19 +5,20 @@
 
 var competition = {
 	zero: function (defender) {
-		return 0;
+            return 0;
 	},
 	identity: function (defender) {
-		return defender;
+            return defender;
 	},
 	half: function (defender) {
-		return defender / 2;
+            return defender / 2;
 	},
 	sqrt: function (defender) {
-		return Math.sqrt(defender);
+            return Math.sqrt(defender);
 	},
 	log: function (defender) {
-		return Math.log(defender) / Math.log(2);
+            if (defender === 0) return 0;
+            return Math.log(defender) / Math.log(2);
 	}
 }
 
@@ -106,16 +107,18 @@ function mutatedNextStateGraph(dynamicMode) {
                 // paper propagates to ex-rock
                 nextStateGraph[c].state = 1;
 
-                // join rock neighboring neighbors that also neighbor paper
-                for (coord in stateGraph[c].nbrs) {
-                    for (joinCandidate in stateGraph[coord].nbrs) {
-                        // for each node at distance 2, check if rock
-                        if (stateGraph[joinCandidate].state === 0) {
-                            // check if that rock neighbors paper
-                            for (joinerNbr in stateGraph[joinCandidate].nbrs){
-                                if (stateGraph[joinerNbr].state === 1) {
-                                    // add as nbr if so
-                                    nextStateGraph[c].addNbr(joinCandidate);
+                if (dynamicMode) {
+                    // join rock neighboring neighbors that also neighbor paper
+                    for (coord in stateGraph[c].nbrs) {
+                        for (joinCandidate in stateGraph[coord].nbrs) {
+                            // for each node at distance 2, check if rock
+                            if (stateGraph[joinCandidate].state === 0) {
+                                // check if that rock neighbors paper
+                                for (joinerNbr in stateGraph[joinCandidate].nbrs){
+                                    if (stateGraph[joinerNbr].state === 1) {
+                                        // add as nbr if so
+                                        nextStateGraph[c].addNbr(joinCandidate);
+                                    }
                                 }
                             }
                         }
