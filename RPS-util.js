@@ -80,7 +80,12 @@ function mooreNbrs(c, dist, density) {
     return mooreNbrs[c + ',' + dist];
 }
 
-function mutatedNextStateGraph() {
+function pushLinks(source, targetArr) {
+    // TODO refactor Cell to use nbr array insted of asshole map
+    // TODO use source and target to generate link id for object constancy
+}
+
+function mutatedNextStateGraph(dynamicMode) {
     var c,
         coord,
         nbr,
@@ -107,6 +112,9 @@ function mutatedNextStateGraph() {
             else 
                 nextStateGraph[c].state = stateGraph[c].state;
 
+            if (dynamicMode) {
+                //TODO
+            }
         }
     return nextStateGraph;
 }

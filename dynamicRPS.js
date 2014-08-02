@@ -1,5 +1,5 @@
-var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
-    , viewH = 800  // THIS MUST BE A SUPER NICE NUMBER
+var viewW = 600    // THIS MUST BE A SUPER NICE NUMBER
+    , viewH = 600  // THIS MUST BE A SUPER NICE NUMBER
 
     , w = viewW / 2 
     , h = viewW / 2
@@ -58,7 +58,7 @@ d3.range(ccx * ccy).forEach(function(c) {
 
 var force = d3.layout.force()
     .size([viewW, viewH])
-    .nodes(stateGraph)
+    .nodes(stateGraph, function (d) {return d.idx;})
     .links(links)
     .linkDistance(padding)
     .charge(-50)
@@ -90,7 +90,8 @@ var container = vis.append('g');
 
 var link = container.selectAll("line")
     .data(force.links())
-    .enter().append("line");
+    .enter()
+        .append("line");
 
 link.classed({'link': true,});
 
@@ -136,22 +137,41 @@ function tick() {
 
 function iterate() {
     if (iterating) {
-        var swap = mutatedNextStateGraph();
+        // get next graph of states, true for dynamic mode
+        var swap = mutatedNextStateGraph(true);
+        // TODO rebuild link list
+        // iterate through state graph node array
         for (var i = 0; i < stateGraph.length; i++) {
-            stateGraph[i].state = swap[i].state;
 
+            // swap node properties so that object references are constant in d3
+            stateGraph[i].state = swap[i].state;
+            // triangle swap .nbrs prop because it's an array or something
             var swapNbrs = stateGraph[i].nbrs;
             stateGraph[i].nbrs = swap[i].nbrs;
             swap[i].nbrs = swapNbrs;
+
+            // TODO rebuild link list
         }
+        
+        // update nodes
+        // map state 0 to rock, 1 to paper, 2 to scissors
+        node.data(stateGraph)
+            .classed({'rock': function(d) { return d.state === 0; },
+                      'paper': function(d) { return d.state === 1; },
+                      'scissors': function(d) { return d.state === 2; }});
+
+        // update links
+        link = link.data(force.links());
+        link.enter()
+                .append('line').attr('class', 'link');
+
+        link.exit()
+                .remove();
+
+        force.start();
     }
 
-        node.data(stateGraph)
-        // class all cells as .cell
-        // map state 0 to rock, 1 to paper, 2 to scissors
-        .classed({'rock': function(d) { return d.state === 0; },
-                  'paper': function(d) { return d.state === 1; },
-                  'scissors': function(d) { return d.state === 2; }});
+
 }
 
 setInterval(iterate, delay);
