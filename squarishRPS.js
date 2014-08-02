@@ -2,23 +2,23 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , viewH = 800  // THIS MUST BE A SUPER NICE NUMBER
 
     , w = viewW / 2 
-    , h = viewW / 2
+    , h = viewH / 2
 
-    , cellSize = 10
-    , padding = 10
+    , cellSize = 5
+    , padding = 5
 
     , ccx = w/(cellSize + padding) // cell count x
     , ccy = h/(cellSize + padding) // cell count y
 
     , xScale = d3.scale.linear().domain([0, ccx])
-                                .range([0, ccx * (cellSize + padding)])
+                                .range([0, viewW])
     , yScale = d3.scale.linear().domain([0, ccy])
-                                .range([0, ccy * (cellSize + padding)])
+                                .range([0, viewH])
 
-    , delay = 50 // ms between generations
+    , delay = 150 // ms between generations
 
-    , density = 0.3 // 1.0 for full moore neighborhoods
-    , depth = 2 // max range of moore neighborhood connections
+    , density = 0.2 // 1.0 for full moore neighborhoods
+    , depth = 3 // max range of moore neighborhood connections
 
     , stateGraph = []
     , nextStateGraph = []
@@ -28,11 +28,14 @@ var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
     , mode = 'log'
     ;
 
-// assign initial cell states
+// assign initial cell states and positions
 // 3 possible cell states - 0, 1, or 2
 d3.range(ccx * ccy).forEach(function(c) {
     stateGraph[c] = new Cell(Math.floor(Math.random() * 3), c, stateGraph);
     nextStateGraph[c] = new Cell(0, c, nextStateGraph);
+
+    stateGraph[c].x = nextStateGraph[c].x = xScale(c % ccx);
+    stateGraph[c].y = nextStateGraph[c].y = yScale(Math.floor(c / ccx));
 });
 
 // set initial neighborhoods
@@ -61,9 +64,10 @@ var force = d3.layout.force()
     .nodes(stateGraph)
     .links(links)
     .linkDistance(padding)
-    .charge(-50)
+    .charge(-15)
     .chargeDistance(padding * 30)
     .gravity(0.001)
+    .friction(0.8)
     .on('tick', tick)
     .start();
 
@@ -144,14 +148,20 @@ function iterate() {
             stateGraph[i].nbrs = swap[i].nbrs;
             swap[i].nbrs = swapNbrs;
         }
-    }
 
         node.data(stateGraph)
-        // class all cells as .cell
-        // map state 0 to rock, 1 to paper, 2 to scissors
-        .classed({'rock': function(d) { return d.state === 0; },
-                  'paper': function(d) { return d.state === 1; },
-                  'scissors': function(d) { return d.state === 2; }});
+            // class all cells as .cell
+            // map state 0 to rock, 1 to paper, 2 to scissors
+            .classed({'rock': function(d) { return d.state === 0; },
+                      'paper': function(d) { return d.state === 1; },
+                      'scissors': function(d) { return d.state === 2; }});
+    }
+
+    // make sure button state reflects mode
+    d3.select('.mode').selectAll('button').each(function () {
+        if (this.innerHTML !== mode) this.disabled = false;
+        else this.disabled = true;
+    });
 }
 
 setInterval(iterate, delay);

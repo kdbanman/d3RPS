@@ -8,6 +8,13 @@
       .mode { padding: 1em }
       .mode ul { list-style: none; }
       .mode ul li { display: inline-block; }
+      button {
+        font-weight: bold;
+      }
+      button:disabled {
+        background-color: #222;
+        color: #CCC;
+      }
       .output {
         margin-left: calc(50% - 400px);
       }
@@ -27,11 +34,11 @@
   </head>
   <body>
     <div class='mode'>
-      <button type="button" onclick="mode = this.innerHTML;">zero</button>
-      <button type="button" onclick="mode = this.innerHTML;">identity</button>
-      <button type="button" onclick="mode = this.innerHTML;">half</button>
-      <button type="button" onclick="mode = this.innerHTML;">sqrt</button>
-      <button type="button" onclick="mode = this.innerHTML;">log</button>
+      <button type="button" onclick="mode = this.innerHTML;this.disabled = true;">zero</button>
+      <button type="button" onclick="mode = this.innerHTML;this.disabled = true;">identity</button>
+      <button type="button" onclick="mode = this.innerHTML;this.disabled = true;">half</button>
+      <button type="button" onclick="mode = this.innerHTML;this.disabled = true;">sqrt</button>
+      <button type="button" onclick="mode = this.innerHTML;this.disabled = true;">log</button>
     </div>
     <div class="output"></div>
     <script src="http://d3js.org/d3.v3.min.js"></script>
