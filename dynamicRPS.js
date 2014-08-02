@@ -1,5 +1,5 @@
-var viewW = 600    // THIS MUST BE A SUPER NICE NUMBER
-    , viewH = 600  // THIS MUST BE A SUPER NICE NUMBER
+var viewW = 400    // THIS MUST BE A SUPER NICE NUMBER
+    , viewH = 400  // THIS MUST BE A SUPER NICE NUMBER
 
     , w = viewW / 2 
     , h = viewW / 2
@@ -47,8 +47,8 @@ d3.range(ccx * ccy).forEach(function(c) {
         nextStateGraph[c].addNbrs(nbrCoords);
 
         // put neighbors in links list for force layout
-        nbrCoords.forEach(function (coord) {
-            links.push({source: c, target: coord});
+        stateGraph[c].d3Links.forEach(function (l) {
+            links.push(l);
         });
 
         // quadratically decrease density
@@ -93,7 +93,7 @@ var link = container.selectAll("line")
     .enter()
         .append("line");
 
-link.classed({'link': true,});
+link.classed({'link': true});
 
 var node = container.selectAll('circle')
         .data(force.nodes(), function (d) { return d.idx; })
@@ -139,7 +139,8 @@ function iterate() {
     if (iterating) {
         // get next graph of states, true for dynamic mode
         var swap = mutatedNextStateGraph(true);
-        // TODO rebuild link list
+        // clear link list
+        links.length = 0;
         // iterate through state graph node array
         for (var i = 0; i < stateGraph.length; i++) {
 
@@ -151,6 +152,9 @@ function iterate() {
             swap[i].nbrs = swapNbrs;
 
             // TODO rebuild link list
+            stateGraph[i].d3Links.forEach(function (l) {
+                links.push(l);
+            });
         }
         
         // update nodes
@@ -161,6 +165,7 @@ function iterate() {
                       'scissors': function(d) { return d.state === 2; }});
 
         // update links
+        console.log(links.length);
         link = link.data(force.links());
         link.enter()
                 .append('line').attr('class', 'link');

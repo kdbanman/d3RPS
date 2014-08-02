@@ -80,14 +80,11 @@ function mooreNbrs(c, dist, density) {
     return mooreNbrs[c + ',' + dist];
 }
 
-function pushLinks(source, targetArr) {
-    // TODO refactor Cell to use nbr array insted of asshole map
-    // TODO use source and target to generate link id for object constancy
-}
-
 function mutatedNextStateGraph(dynamicMode) {
     var c,
         coord,
+        joinCandidate,
+        joinerNbr,
         nbr,
         numRock,
         numPaper,
@@ -103,14 +100,43 @@ function mutatedNextStateGraph(dynamicMode) {
                 else numScissors++;
             }
 
-            if (stateGraph[c].state === 0 && numPaper > competition[mode](numRock))
+            if (stateGraph[c].state === 0 &&
+                numPaper > competition[mode](numRock))
+            {
+                // paper propagates to ex-rock
                 nextStateGraph[c].state = 1;
-            else if (stateGraph[c].state === 1 && numScissors > competition[mode](numPaper))
+
+                // join rock neighboring neighbors that also neighbor paper
+                for (coord in stateGraph[c].nbrs) {
+                    for (joinCandidate in stateGraph[coord].nbrs) {
+                        // for each node at distance 2, check if rock
+                        if (stateGraph[joinCandidate].state === 0) {
+                            // check if that rock neighbors paper
+                            for (joinerNbr in stateGraph[joinCandidate].nbrs){
+                                if (stateGraph[joinerNbr].state === 1) {
+                                    // add as nbr if so
+                                    nextStateGraph[c].addNbr(joinCandidate);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (stateGraph[c].state === 1 &&
+                numScissors > competition[mode](numPaper))
+            {
+                // TODO first, sever from neighboring papers that neihbor scissors
+                // second, ex-paper becomes scissors
                 nextStateGraph[c].state = 2;
-            else if (stateGraph[c].state === 2 && numRock > competition[mode](numScissors))
+            } else if (stateGraph[c].state === 2 &&
+                numRock > competition[mode](numScissors))
+            {
+                // rock propagates to ex-scissors
                 nextStateGraph[c].state = 0;
-            else 
+            } else
+            {
+                // state is maintained
                 nextStateGraph[c].state = stateGraph[c].state;
+            }
 
             if (dynamicMode) {
                 //TODO
