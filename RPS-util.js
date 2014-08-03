@@ -83,9 +83,9 @@ function mooreNbrs(c, dist, density) {
 
 function mutatedNextStateGraph(dynamicMode) {
     var c,
-        coord,
-        joinCandidate,
-        joinerNbr,
+        d1Coord,  // distance 1 nbr coord
+        d2Coord,  // distance 2
+        d3Coord,  // distance 3
         nbr,
         numRock,
         numPaper,
@@ -95,9 +95,9 @@ function mutatedNextStateGraph(dynamicMode) {
             numRock = 0;
             numPaper = 0;
             numScissors = 0;
-            for (coord in stateGraph[c].nbrs) {
-                if (stateGraph[coord].state === 0) numRock++;
-                else if (stateGraph[coord].state === 1) numPaper++;
+            for (d1Coord in stateGraph[c].nbrs) {
+                if (stateGraph[d1Coord].state === 0) numRock++;
+                else if (stateGraph[d1Coord].state === 1) numPaper++;
                 else numScissors++;
             }
 
@@ -109,27 +109,42 @@ function mutatedNextStateGraph(dynamicMode) {
 
                 if (dynamicMode) {
                     // join rock neighboring neighbors that also neighbor paper
-                    for (coord in stateGraph[c].nbrs) {
-                        for (joinCandidate in stateGraph[coord].nbrs) {
+                    for (d1Coord in stateGraph[c].nbrs) {
+                        for (d2Coord in stateGraph[d1Coord].nbrs) {
+                            //DEBUG
+                            if (Math.random() < 0.05)
+                                nextStateGraph[c].addNbr(d2Coord);
+                            /*
                             // for each node at distance 2, check if rock
-                            if (stateGraph[joinCandidate].state === 0) {
+                            if (stateGraph[d2Coord].state === 0) {
                                 // check if that rock neighbors paper
-                                for (joinerNbr in stateGraph[joinCandidate].nbrs){
-                                    if (stateGraph[joinerNbr].state === 1) {
+                                for (d3Coord in stateGraph[d2Coord].nbrs){
+                                    if (stateGraph[d3Coord].state === 1) {
                                         // add as nbr if so
-                                        nextStateGraph[c].addNbr(joinCandidate);
+                                        nextStateGraph[c].addNbr(d2Coord);
                                     }
                                 }
                             }
+                            */
                         }
                     }
                 }
             } else if (stateGraph[c].state === 1 &&
                 numScissors > competition[mode](numPaper))
             {
-                // TODO first, sever from neighboring papers that neihbor scissors
-                // second, ex-paper becomes scissors
+                // ex-paper becomes scissors
                 nextStateGraph[c].state = 2;
+
+                if (dynamicMode) {
+                    // sever from neighboring papers that neihbor scissors
+                    for (d1Coord in stateGraph[c].nbrs) {
+                        for (d2Coord in stateGraph[d1Coord].nbrs) {
+                            //DEBUG
+                            if (Math.random() < 0.05)
+                                nextStateGraph[c].delNbr(d1Coord);
+                        }
+                    }
+                }
             } else if (stateGraph[c].state === 2 &&
                 numRock > competition[mode](numScissors))
             {
@@ -140,14 +155,10 @@ function mutatedNextStateGraph(dynamicMode) {
                 // state is maintained
                 nextStateGraph[c].state = stateGraph[c].state;
             }
-
-            if (dynamicMode) {
-                //TODO
-            }
         }
     return nextStateGraph;
 }
 
-///////////////
-// D3 UTILITIES
-///////////////
+function linkID(d) {
+    return d.source + "-" + d.target;
+}

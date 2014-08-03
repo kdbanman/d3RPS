@@ -1,11 +1,11 @@
-var viewW = 600    // THIS MUST BE A SUPER NICE NUMBER
-    , viewH = 600  // THIS MUST BE A SUPER NICE NUMBER
+var viewW = 800    // THIS MUST BE A SUPER NICE NUMBER
+    , viewH = 800  // THIS MUST BE A SUPER NICE NUMBER
 
     , w = viewW / 2 
     , h = viewH / 2
 
-    , cellSize = 10
-    , padding = 10
+    , cellSize = 5
+    , padding = 5
 
     , ccx = w/(cellSize + padding) // cell count x
     , ccy = h/(cellSize + padding) // cell count y
@@ -50,7 +50,7 @@ d3.range(ccx * ccy).forEach(function(c) {
         nextStateGraph[c].addNbrs(nbrCoords);
 
         // put neighbors in links list for force layout
-        stateGraph[c].d3Links.forEach(function (l) {
+        nextStateGraph[c].d3Links.forEach(function (l) {
             links.push(l);
         });
 
@@ -93,7 +93,7 @@ var rect = vis.append("rect")
 var container = vis.append('g');
 
 var link = container.selectAll("line")
-    .data(force.links())
+    .data(force.links(), linkID)
     .enter()
         .append("line");
 
@@ -130,13 +130,15 @@ function dragged(d) {
 }
 
 function tick() {
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+    if (!iterating) {
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
 
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+    }
 }
 
 function iterate() {
@@ -150,32 +152,30 @@ function iterate() {
 
             // swap node properties so that object references are constant in d3
             stateGraph[i].state = swap[i].state;
-            // triangle swap .nbrs prop because it's an array or something
-            var swapNbrs = stateGraph[i].nbrs;
-            stateGraph[i].nbrs = swap[i].nbrs;
-            swap[i].nbrs = swapNbrs;
 
-            // TODO rebuild link list
+            stateGraph[i].copyNbrs(swap[i]);
+            
+            // rebuild link list
             stateGraph[i].d3Links.forEach(function (l) {
                 links.push(l);
             });
         }
         
+        // update links
+        console.log(links.length);
+        link = link.data(force.links(), linkID);
+        link.enter()
+                .append('line').attr('class', 'link');
+
+        link.exit()
+                .remove();
+                
         // update nodes
         // map state 0 to rock, 1 to paper, 2 to scissors
         node.data(stateGraph)
             .classed({'rock': function(d) { return d.state === 0; },
                       'paper': function(d) { return d.state === 1; },
                       'scissors': function(d) { return d.state === 2; }});
-
-        // update links
-        console.log(links.length);
-        link = link.data(force.links());
-        link.enter()
-                .append('line').attr('class', 'link');
-
-        link.exit()
-                .remove();
 
         force.start();
     }
