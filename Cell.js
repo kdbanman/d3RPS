@@ -13,28 +13,30 @@ var Cell = function (initialState, index, parentGraph)
 
 // has no effect if neighbor link already exists.
 // neighbor Cells MUST already exist within the parent graph.
-Cell.prototype.addNbrs = function (coordArr)
+Cell.prototype.addNbrs = function (coordArr, inclLinks)
 {
     var that = this;
     coordArr.forEach(function (coord) {
-        that.addNbr(coord);
+        that.addNbr(coord, inclLinks);
     });
 }
 
 // has no effect if neighbor link already exists.
 // neighbor Cells MUST already exist within the parent graph.
-Cell.prototype.addNbr = function (coord)
+Cell.prototype.addNbr = function (coord, inclLink)
 {
+    if (inclLink === undefined) inclLink = true;
+
     // add neighbor to list
     if (!this.nbrs[coord]) {
         this.nbrs[coord] = true;
-        this.d3Links.push({source: this.idx, target: coord});
+        if (inclLink) this.d3Links.push({source: this.idx, target: coord});
     }
     // add self as neighbor to new neighbor
     var nbr = this.graph[coord];
     if (!nbr.nbrs[this.idx]) {
         nbr.nbrs[this.idx] = true;
-        nbr.d3Links.push({source: coord, target: this.idx});
+        if (inclLink) nbr.d3Links.push({source: coord, target: this.idx});
     }
 }
 
@@ -75,4 +77,22 @@ Cell.prototype.delNbr = function (coord)
             }
         }
     }
+}
+
+Cell.prototype.clearNbrs = function () {
+    this.nbrs = {};
+    this.d3Links = [];
+}
+
+Cell.prototype.copyNbrs = function (cell) {
+    this.clearNbrs()
+    
+    for (var nbrCoord in cell.nbrs) {
+        this.addNbr(nbrCoord, false);
+    }
+
+    var that = this;
+    cell.d3Links.forEach(function (l) {
+       that.d3Links.push(l);
+    });
 }
